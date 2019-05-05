@@ -20,7 +20,7 @@ def fix_source(source, mask, shape, offset):
 offset = [[210, 10], [10, 28], [140, 80], [-40, 90], [60, 100], [-28, 88]]
 
 
-for pic_index in range(1, 5):
+for pic_index in range(1, 6):
     mask = cv2.imread("../data/mask_0{0}.jpg".format(pic_index), 0)
     source = cv2.imread("../data/source_0{0}.jpg".format(pic_index))
     target = cv2.imread("../data/target_0{0}.jpg".format(pic_index))
@@ -32,59 +32,42 @@ for pic_index in range(1, 5):
 
     for k, v in D.items():
         A[v][v] = 4
-        b[v] += 4*fixed_source[k[0]][k[1]] \
-            - fixed_source[k[0]+1][k[1]] \
-            - fixed_source[k[0]-1][k[1]] \
-            - fixed_source[k[0]][k[1]+1] \
-            - fixed_source[k[0]][k[1]-1]
+        for j in (1, -1):
 
-        if (k[0]+1, k[1]) in D: # in D means this pixel is waiting to be calculated
-            A[v][D[(k[0]+1, k[1])]] = -1
-        else:
-            b[v] += target[k[0]+1][k[1]]
+            if (k[0]+j, k[1]) in D: # in D means this pixel is waiting to be calculated
+                A[v][D[(k[0]+j, k[1])]] = -1
+            else:
+                b[v] += target[k[0]+j][k[1]]
 
-        if (k[0]-1, k[1]) in D:
-            A[v][D[(k[0]-1, k[1])]] = -1
-        else:
-            b[v] += target[k[0]-1][k[1]]
+            if (k[0], k[1]+j) in D:
+                A[v][D[(k[0], k[1]+j)]] = -1
+            else:
+                b[v] += target[k[0]][k[1]+j]
 
-        if (k[0], k[1]+1) in D:
-            A[v][D[(k[0], k[1]+1)]] = -1
-        else:
-            b[v] += target[k[0]][k[1]+1]
+            #fixed_source is g
+            #target is f*
+            for i in range(3): #three color channel
+                #target is uint8, change to int first
+                if abs(int(target[k[0]][k[1]][i])-int(target[k[0]+j][k[1]][i]))>abs(int(fixed_source[k[0]][k[1]][i])-int(fixed_source[k[0]+j][k[1]][i])):
+                    b[v][i] += int(target[k[0]][k[1]][i])-int(target[k[0]+j][k[1]][i])
+                else:
+                    b[v][i] += int(fixed_source[k[0]][k[1]][i])-int(fixed_source[k[0]+j][k[1]][i])
 
-        if (k[0], k[1]-1) in D:
-            A[v][D[(k[0], k[1]-1)]] = -1
-        else:
-            b[v] += target[k[0]][k[1]-1]
+                if abs(int(target[k[0]][k[1]][i])-int(target[k[0]][k[1]+j][i]))>abs(int(fixed_source[k[0]][k[1]][i])-int(fixed_source[k[0]][k[1]+j][i])):
+                    b[v][i] += int(target[k[0]][k[1]][i])-int(target[k[0]][k[1]+j][i])
+                else:
+                    b[v][i] += int(fixed_source[k[0]][k[1]][i])-int(fixed_source[k[0]][k[1]+j][i])
+
 
     x = np.linalg.lstsq(A, b)[0]
 
     for k, v in D.items():
-        if x[v][0]>255:
-            target[k[0]][k[1]][0] = np.uint8(255)
-        elif x[v][0]<0:
-            target[k[0]][k[1]][0] = np.uint8(0)
-        else:
-            target[k[0]][k[1]][0] = np.uint8(round(x[v][0]))
-
-        if x[v][1]>255:
-            target[k[0]][k[1]][1] = np.uint8(255)
-        elif x[v][1]<0:
-            target[k[0]][k[1]][1] = np.uint8(0)
-        else:
-            target[k[0]][k[1]][1] = np.uint8(round(x[v][1]))
-
-        if x[v][2]>255:
-            target[k[0]][k[1]][2] = np.uint8(255)
-        elif x[v][2]<0:
-            target[k[0]][k[1]][2] = np.uint8(0)
-        else:
-            target[k[0]][k[1]][2] = np.uint8(round(x[v][2]))
-
-
-        # target[k[0]][k[1]][0] = np.uint8(round(x[v][0])%256)
-        # target[k[0]][k[1]][1] = np.uint8(round(x[v][1])%256)
-        # target[k[0]][k[1]][2] = np.uint8(round(x[v][2])%256)
+        for i in range(3):
+            if x[v][i]>255:
+                target[k[0]][k[1]][i] = np.uint8(255)
+            elif x[v][i]<0:
+                target[k[0]][k[1]][i] = np.uint8(0)
+            else:
+                target[k[0]][k[1]][i] = np.uint8(round(x[v][i]))
 
     cv2.imwrite("result_0{0}.jpg".format(pic_index), target)
