@@ -11,8 +11,7 @@ def fix_source(source, mask, shape, offset):
             if mask[i][j]>127:
                 mydict[(i+offset[0], j+offset[1])] = counter
                 counter += 1
-    fixed_source = np.zeros(shape, dtype=int) #是int 不然后面*4会爆掉
-    # fixed_source = np.zeros(shape)
+    fixed_source = np.zeros(shape, dtype=int) #use int to avoid overflow
     fixed_source[max(0, offset[0]):min(source.shape[0]+offset[0], shape[0]), max(0, offset[1]):min(source.shape[1]+offset[1],shape[1]),:]=source[max(0,-offset[0]):min(source.shape[0], shape[0]-offset[0]),max(0,-offset[1]):min(source.shape[1], shape[1]-offset[1]),:]
 
     return fixed_source, mydict
