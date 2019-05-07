@@ -10,6 +10,6 @@ Python implementation of Poisson image editing by Yang Zhuoyu.
 
 
 # Dependency:
-    - python 3.7
-    - numpy
-    - cv2
+- python 3.7
+- numpy
+- cv2
