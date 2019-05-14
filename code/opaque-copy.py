@@ -60,10 +60,18 @@ for pic_index in range(1, 2):
         else:
             b[v] += target[k[0]][k[1]-1]
 
-    # A = sparse.csr_matrix(A)
+    A = sparse.csr_matrix(A)
     # b = sparse.csr_matrix(b)
 
-    x = np.concatenate([lsqr(A, b[:,0])[0],lsqr(A, b[:,1])[0],lsqr(A, b[:,2])[0]], axis=1)
+    channel0 = lsqr(A, b[:,0])[0]
+    channel1 = lsqr(A, b[:,1])[0]
+    channel2 = lsqr(A, b[:,2])[0]
+
+    channel0 = channel0.reshape([channel0.shape[0], 1])
+    channel1 = channel1.reshape([channel1.shape[0], 1])
+    channel2 = channel2.reshape([channel2.shape[0], 1])
+
+    x = np.concatenate([channel0, channel1, channel2], axis=1)
 
     for k, v in D.items():
         if x[v][0]>255:
