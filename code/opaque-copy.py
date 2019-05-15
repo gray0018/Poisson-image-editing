@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import cv2
 import numpy as np
+from scipy.sparse.linalg import spsolve
 
 def fix_source(source, mask, shape, offset):
     mydict = {}
@@ -19,7 +20,7 @@ def fix_source(source, mask, shape, offset):
 offset = [[210, 10], [10, 28], [140, 80], [-40, 90], [60, 100], [-28, 88]]
 
 
-for pic_index in range(1, 5):
+for pic_index in range(1, 6):
     mask = cv2.imread("../data/mask_0{0}.jpg".format(pic_index), 0)
     source = cv2.imread("../data/source_0{0}.jpg".format(pic_index))
     target = cv2.imread("../data/target_0{0}.jpg".format(pic_index))
@@ -57,7 +58,7 @@ for pic_index in range(1, 5):
         else:
             b[v] += target[k[0]][k[1]-1]
 
-    x = np.linalg.lstsq(A, b)[0]
+    x = spsolve(A, b)
 
     for k, v in D.items():
         if x[v][0]>255:
