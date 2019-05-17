@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import cv2
 import numpy as np
-from scipy.sparse.linalg import spsolve
+from scipy.sparse.linalg import cg
 
 def fix_source(source, mask, shape, offset):
     mydict = {}
@@ -58,7 +58,7 @@ for pic_index in range(1, 6):
                 else:
                     b[v][i] += int(fixed_source[k[0]][k[1]][i])-int(fixed_source[k[0]][k[1]+j][i])
 
-    x = spsolve(A, b)
+    x = cg(A, b)
 
     for k, v in D.items():
         for i in range(3):
