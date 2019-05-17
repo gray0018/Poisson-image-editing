@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import cv2
 import numpy as np
+from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import cg
 
 def fix_source(source, mask, shape, offset):
@@ -59,7 +60,7 @@ for pic_index in range(1, 6):
                     b[v][i] += int(fixed_source[k[0]][k[1]][i])-int(fixed_source[k[0]][k[1]+j][i])
 
 
-    A = sparse.csr_matrix(A)
+    A = csr_matrix(A)
     # b = sparse.csr_matrix(b)
 
     channel0 = cg(A, b[:,0])[0]
